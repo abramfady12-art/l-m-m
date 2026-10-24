@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سيكرت سانتا 🎄 Secret Santa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root{--primary-red:#c0392b;--dark-red:#962d22;--christmas-green:#27ae60;--dark-green:#1e824c;--accent-gold:#f1c40f;--snow-white:#fefefe;--bg-dark:#0f172a}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',sans-serif;user-select:none}
+        body{background:linear-gradient(135deg,#0d1b2a 0%,#1b263b 50%,#0d1b2a 100%);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-x:hidden;position:relative;padding:20px 10px 40px}
+        .crazy-banner{width:100%;max-width:600px;background:linear-gradient(90deg,#ff0055,#ff0000,#ffb700,#00ff66,#00d4ff,#ff0055);background-size:400% 400%;animation:crazyGradient 3s ease infinite,crazyShake 1.2s ease-in-out infinite alternate;border-radius:20px;padding:14px 18px;margin-bottom:12px;text-align:center;box-shadow:0 0 25px rgba(255,0,85,.8),0 0 10px rgba(255,255,255,.5);border:2px solid #fff;z-index:20}
+        .crazy-text{font-size:1.25rem;font-weight:900;color:#fff;text-shadow:2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,0 0 12px rgba(255,255,255,.9);letter-spacing:.5px;display:inline-block;animation:crazyPop .8s ease-in-out infinite alternate}
+        .ebra-note{font-size:.95rem;font-weight:800;color:#f1c40f;margin-top:6px;text-shadow:1px 1px 4px rgba(0,0,0,.8);display:block}
+        @keyframes crazyGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @keyframes crazyShake{0%{transform:rotate(-2deg) scale(.98)}50%{transform:rotate(2deg) scale(1.02)}100%{transform:rotate(-1deg) scale(1)}}
+        @keyframes crazyPop{0%{transform:scale(.95)}100%{transform:scale(1.05)}}
+        #snow-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1}
+        .container{width:100%;max-width:600px;background:rgba(255,255,255,.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);border-radius:28px;padding:30px 24px;box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 30px rgba(192,57,43,.2);z-index:10;position:relative;text-align:center}
+        .header-decor{font-size:3.5rem;margin-bottom:5px;animation:bounce 2s infinite ease-in-out;text-shadow:0 0 15px rgba(241,196,15,.6)}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        h1{font-size:2.2rem;font-weight:900;color:var(--accent-gold);margin-bottom:8px;text-shadow:2px 2px 8px rgba(0,0,0,.6)}
+        .subtitle{font-size:.95rem;color:#cbd5e1;margin-bottom:25px;line-height:1.5}
+        .admin-nav{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;margin-bottom:12px;z-index:10}
+        .admin-badge{background:rgba(241,196,15,.2);border:1px solid var(--accent-gold);color:var(--accent-gold);padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:6px}
+        .btn-admin-login{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#e2e8f0;padding:6px 16px;border-radius:20px;font-size:.85rem;cursor:pointer;transition:all .3s ease}
+        .btn-admin-login:hover{background:var(--accent-gold);color:#000;border-color:var(--accent-gold)}
+        .panel{display:none;animation:fadeIn .4s ease-out forwards}
+        .panel.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .form-group{margin-bottom:22px;text-align:right}
+        label{display:block;margin-bottom:8px;font-weight:700;font-size:1rem;color:#f8fafc}
+        select,input{width:100%;padding:14px 16px;background:rgba(15,23,42,.7);border:2px solid rgba(255,255,255,.15);border-radius:14px;color:#fff;font-size:1.05rem;outline:none;transition:all .3s ease}
+        select:focus,input:focus{border-color:var(--accent-gold);box-shadow:0 0 12px rgba(241,196,15,.3)}
+        select option{background:#1e293b;color:#fff}
+        .btn-festive{width:100%;padding:16px;background:linear-gradient(135deg,var(--primary-red) 0%,var(--dark-red) 100%);color:#fff;border:none;border-radius:16px;font-size:1.2rem;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(192,57,43,.4);transition:all .3s ease;display:flex;align-items:center;justify-content:center;gap:10px}
+        .btn-festive:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(192,57,43,.6);background:linear-gradient(135deg,#e74c3c 0%,var(--primary-red) 100%)}
+        .gift-box-container{margin:30px 0}
+        .gift-icon{font-size:6rem;display:inline-block;filter:drop-shadow(0 10px 15px rgba(0,0,0,.5));animation:pulseGift 1.5s infinite alternate}
+        @keyframes pulseGift{0%{transform:scale(1)}100%{transform:scale(1.08) rotate(3deg)}}
+        .result-card{background:linear-gradient(135deg,rgba(39,174,96,.2) 0%,rgba(30,130,76,.3) 100%);border:2px solid var(--christmas-green);border-radius:20px;padding:25px 20px;margin:20px 0}
+        .result-label{font-size:.95rem;color:#a7f3d0;margin-bottom:8px}
+        .assigned-name{font-size:2.2rem;font-weight:900;color:var(--accent-gold);text-shadow:0 0 15px rgba(241,196,15,.5);margin:10px 0}
+        .admin-table-wrapper{overflow-x:auto;margin-top:15px;border-radius:12px;border:1px solid rgba(255,255,255,.1)}
+        table{width:100%;border-collapse:collapse;text-align:right;font-size:.9rem}
+        th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+        th{background:rgba(241,196,15,.15);color:var(--accent-gold);font-weight:700}
+        tr:nth-child(even){background:rgba(255,255,255,.03)}
+        .status-badge{padding:4px 8px;border-radius:8px;font-size:.75rem;font-weight:700;display:inline-block}
+        .status-done{background:rgba(39,174,96,.2);color:#2ecc71;border:1px solid #2ecc71}
+        .status-pending{background:rgba(241,196,15,.2);color:#f1c40f;border:1px solid #f1c40f}
+        .btn-danger{background:#e74c3c;color:#fff;border:none;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;margin-top:15px}
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+        .modal-card{background:#1e293b;border:1px solid rgba(255,255,255,.2);border-radius:20px;width:100%;max-width:400px;padding:25px;text-align:center}
+        .remaining-box{font-size:.85rem;color:#94a3b8;margin-top:15px;background:rgba(0,0,0,.2);padding:8px 14px;border-radius:10px;display:inline-block}
+    </style>
+</head>
+<body>
+    <canvas id="snow-canvas"></canvas>
+    <div class="crazy-banner">
+        <span class="crazy-text">🔥 فرح اخواتك الـ 5% في رأس السنة 🎉🎁</span>
+        <span class="ebra-note">💬 متنساش تقول رأيك في التصميم لـ ENG. Ebra 🎨✨</span>
+    </div>
+    <div class="admin-nav">
+        <div class="admin-badge" id="adminBadge" style="display: none;">🛡️ لوحة التحكم (الأدمن)</div>
+        <div></div>
+        <button class="btn-admin-login" id="adminToggleBtn" onclick="openAdminModal()">🔒 دخول الأدمن</button>
+    </div>
+    <div class="container">
+        <div class="header-decor">🎄</div>
+        <h1>سيكرت سانتا 🎅</h1>
+        <p class="subtitle">اختر اسمك واكتشف الشخص الذي ستقدم له هديتك هذا الكريسماس!</p>
+        
+        <div id="panel-select" class="panel active">
+            <div class="form-group">
+                <label for="userSelect">👤 اختر اسمك من القائمة:</label>
+                <select id="userSelect"><option value="" disabled selected>-- اختر اسمك هنا --</option></select>
+            </div>
+            <button class="btn-festive" onclick="handleStartDraw()">🎁 اسحب هديتك الآن</button>
+            <div class="remaining-box">🎁 متبقي <strong id="remainingCount" style="color: var(--accent-gold);">0</strong> هدايا لم تُسحب بعد!</div>
+            <div id="modeNote" style="font-size:.75rem;color:#94a3b8;margin-top:12px;"></div>
+        </div>
+
+        <div id="panel-drawing" class="panel">
+            <h2 style="color: var(--accent-gold); margin-bottom: 15px;">جاري اختيار شخص مميز لك...</h2>
+            <div class="gift-box-container"><span class="gift-icon">🎁</span></div>
+            <p style="color: #cbd5e1;">لحظات قليلة وتكتمل المفاجأة ❄️</p>
+        </div>
+
+        <div id="panel-result" class="panel">
+            <h2 style="color: #fff; font-size: 1.4rem;">تهانينا! 🎉</h2>
+            <p style="color: #cbd5e1; margin-top: 5px;">أنت السيكرت سانتا لـ:</p>
+            <div class="result-card">
+                <div class="result-label">🎁 الشخص المطلوب تجهيز هدية له:</div>
+                <div class="assigned-name" id="assignedNameDisplay">---</div>
+                <p style="font-size: 0.95rem; color: #ff6b6b; font-weight: 800; margin-top: 12px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px;">
+                    🤫 في سرك بقى يا عم متفضحش الدنيا بدل ما تتهكر ☠️
+                </p>
+            </div>
+            <button class="btn-festive" style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); margin-top: 15px;" onclick="resetToHome()">🏠 العودة للقائمة الرئيسية</button>
+        </div>
+
+        <div id="panel-admin" class="panel">
+            <h2 style="color: var(--accent-gold); font-size: 1.4rem; margin-bottom: 10px;">📋 جدول السحوبات الكامل</h2>
+            <p style="font-size: 0.85rem; color: #94a3b8;">صفحة خاصة بالأدمن لمتابعة من سحب ومن سيشتري لمن.</p>
+            <div class="admin-table-wrapper">
+                <table>
+                    <thead><tr><th>الشخص</th><th>الحالة</th><th>المستلم (الهدية لـ)</th></tr></thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+            <div style="margin-top:22px;text-align:right;background:rgba(0,0,0,.25);padding:14px;border-radius:12px;">
+                <p style="font-weight:800;color:var(--accent-gold);margin-bottom:6px;">🌐 رابط القرعة المشتركة</p>
+                <p id="shareStatus" style="font-size:.8rem;color:#cbd5e1;margin-bottom:10px;"></p>
+                <button class="btn-admin-login" style="padding:8px 14px;border-radius:10px;" onclick="makeSharedLink()">إنشاء رابط مشترك جديد</button>
+                <input id="shareLink" readonly placeholder="الرابط هيظهر هنا" style="margin-top:10px;font-size:.8rem;text-align:left;direction:ltr;user-select:text;">
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-danger" onclick="confirmResetAll()">🔄 إعادة ضبط القرعة بالكامل</button>
+                <button class="btn-admin-login" style="padding: 10px 18px; border-radius: 12px;" onclick="logoutAdmin()">🚪 خروج الأدمن</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-card">
+            <h3>🛡️ تسجيل دخول الأدمن</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 15px;">يرجى إدخال كلمة المرور للوصول للوحة التحكم:</p>
+            <input type="password" id="adminPasswordInput" placeholder="أدخل كلمة المرور..." style="margin-bottom: 15px; text-align: center;">
+            <div id="modalError" style="color: #e74c3c; font-size: 0.85rem; margin-bottom: 10px; display: none;">كلمة المرور غير صحيحة!</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-festive" style="padding: 10px; font-size: 1rem;" onclick="checkAdminPassword()">دخول</button>
+                <button class="btn-admin-login" style="padding: 10px 15px; width: 100%; border-radius: 14px;" onclick="closeAdminModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOYS = ["ابرام", "توماس", "توني", "شادي", "منير", "سيحا"];
+        const GIRLS = ["جونير", "مايا", "مورين", "فيولا", "هيلانه", "ميرا", "مارينا", "ماريان", "ماريا", "نانسي", "ساندي"];
+        const ALL_PEOPLE = [...BOYS, ...GIRLS];
+        const API = "https://jsonblob.com/api/jsonBlob";
+        let BLOB = (location.hash || "").replace("#", "").trim();
+
+        const PUB_JWK = {"kty":"RSA","n":"ut-2XV6NDi572fbH_L4maKfpY4vliTbV8akJwGB3FAc08F6MI8C0xyQt9be2b9W30GuK6ajTjdlT6k7-0CJMmH77yqgRt7fII_9NqXPcHygKysa3H9QiFksazKX5ImWaOp-_3nWghokL4ShiMcyQoH5Nj8k94iA4Pxtucqmk0LPOtcNe-aXtEbvUGlYwMNRAj2T7PBRbYLeQEYWoQ9UYxQY8F_zkZa3cvxcc2c9oZ3fiFwXMeeDHN5UjHacs3KPAqinHOlX8Dzf666Y2ExBVxleId3zQtSALRo_g0V8tR4PCx_W5bmAZaTC9_Rnxo6puBvXN48DAjFlNim12f_5a-Q","e":"AQAB","alg":"RSA-OAEP-256","ext":true,"key_ops":["encrypt"]};
+        const WRAPPED_PRIVATE = "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";
+
+        let appState = norm(null);
+        let isAdminLoggedIn = false;
+        let adminPriv = null;
+
+        function b64e(u8) { let s = ""; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s); }
+        function b64d(s) { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+        const RSA = { name: "RSA-OAEP", hash: "SHA-256" };
+
+        async function encryptPick(name) {
+            const key = await crypto.subtle.importKey("jwk", PUB_JWK, RSA, false, ["encrypt"]);
+            const ct = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(name));
+            return b64e(new Uint8Array(ct));
+        }
+
+        async function unwrapPrivate(password) {
+            const raw = b64d(WRAPPED_PRIVATE);
+            const salt = raw.slice(0, 16), iv = raw.slice(16, 28), data = raw.slice(28);
+            const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+            const k = await crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 200000, hash: "SHA-256" }, km, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+            const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, k, data);
+            return crypto.subtle.importKey("jwk", JSON.parse(new TextDecoder().decode(pt)), RSA, false, ["decrypt"]);
+        }
+
+        async function decryptPick(priv, b) {
+            const pt = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, priv, b64d(b));
+            return new TextDecoder().decode(pt);
+        }
+
+        function norm(s) {
+            s = (s && typeof s === "object") ? s : {};
+            const hasDrawn = (s.hasDrawn && typeof s.hasDrawn === "object") ? s.hasDrawn : {};
+            const enc = (s.enc && typeof s.enc === "object") ? s.enc : {};
+            const taken = Array.isArray(s.taken) ? s.taken.filter(n => ALL_PEOPLE.includes(n)) : [];
+            return { hasDrawn, enc, taken, availablePool: ALL_PEOPLE.filter(n => !taken.includes(n)) };
+        }
+
+        async function remoteGet() {
+            if (!BLOB) return norm(null);
+            const r = await fetch(API + "/" + BLOB, { headers: { "Accept": "application/json" }, cache: "no-store" });
+            if (!r.ok) throw new Error("get");
+            return norm(await r.json());
+        }
+
+        async function remotePut(st) {
+            if (!BLOB) return;
+            await fetch(API + "/" + BLOB, { 
+                method: "PUT", 
+                headers: { "Content-Type": "application/json", "Accept": "application/json" }, 
+                body: JSON.stringify(st) 
+            });
+        }
+
+        async function initData() {
+            const note = document.getElementById("modeNote");
+            if (BLOB) {
+                try { 
+                    appState = await remoteGet(); 
+                    note.textContent = "🌐 القرعة مشتركة ومتصلة بالسيرفر الحقيقي"; 
+                } catch(e) { 
+                    appState = norm(null);
+                    note.textContent = "⚠️ خطأ في الاتصال بالرابط المشترك."; 
+                }
+            } else {
+                appState = norm(null);
+                note.textContent = "⚠️ يجب الدخول من الرابط المشترك الذي ينشئه الأدمن لكي ترى وتحدث الأسماء مع أصحابك!";
+            }
+            populateDropdown();
+            updateRemainingCount();
+        }
+
+        function populateDropdown() {
+            const select = document.getElementById("userSelect");
+            if (!select) return;
+            const cur = select.value;
+            select.innerHTML = '<option value="" disabled selected>-- اختر اسمك هنا --</option>';
+            ALL_PEOPLE.forEach(person => {
+                if (!appState.hasDrawn[person]) {
+                    const opt = document.createElement("option");
+                    opt.value = person; 
+                    opt.textContent = person; 
+                    select.appendChild(opt);
+                }
+            });
+            if (cur && !appState.hasDrawn[cur]) select.value = cur;
+        }
+
+        function updateRemainingCount() {
+            const el = document.getElementById("remainingCount");
+            if (el) el.textContent = appState.availablePool.length;
+        }
+
+        function showPanel(panelId) {
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            document.getElementById(panelId).classList.add("active");
+        }
+
+        async function handleStartDraw() {
+            const select = document.getElementById("userSelect");
+            const userName = select.value;
+            if (!userName) {
